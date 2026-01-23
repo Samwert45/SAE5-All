@@ -1,0 +1,28 @@
+{
+  "connecteurs": ["LDAP"],
+  "configs": {
+    "Odoo": {
+      "host": "",
+      "port": "8069",
+      "database": "",
+      "username": "",
+      "apiKey": ""
+    },
+    "SQL": {
+      "host": "",
+      "port": "5432",
+      "database": "",
+      "username": "",
+      "password": "",
+      "defaultTable": "users"
+    },
+    "LDAP": {
+      "host": "localhost",
+      "port": "389",
+      "baseDn": "dc=example,dc=com",
+      "bindDn": "cn=admin,dc=example,dc=com",
+      "password": "admin",
+      "defaultOU": "ou=Users,dc=example,dc=com"
+    }
+  }
+}

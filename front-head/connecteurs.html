@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connecteurs - Configuration</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="connecteurs.html" class="active">Connecteurs</a></li>
+            <li><a href="utilisateurs.html">Utilisateurs</a></li>
+        </ul>
+    </nav>
+
+    <div class="container" id="connecteurs-page">
+        <h1>Configuration des Connecteurs</h1>
+
+        <div class="card">
+            <h2>Sélectionnez les connecteurs à activer</h2>
+
+            <div class="connecteurs-grid">
+                <div class="connecteur-item">
+                    <input type="checkbox" id="odoo" value="Odoo">
+                    <div class="connecteur-icon">OD</div>
+                    <label for="odoo">Odoo</label>
+                </div>
+
+                <div class="connecteur-item">
+                    <input type="checkbox" id="sql" value="SQL">
+                    <div class="connecteur-icon">SQ</div>
+                    <label for="sql">SQL</label>
+                </div>
+
+                <div class="connecteur-item">
+                    <input type="checkbox" id="ldap" value="LDAP">
+                    <div class="connecteur-icon">LD</div>
+                    <label for="ldap">LDAP</label>
+                </div>
+            </div>
+
+            <div class="summary" id="selected-summary">
+                <p class="empty-state">Aucun connecteur sélectionné</p>
+            </div>
+        </div>
+
+        <!-- Section Configuration -->
+        <div class="config-section" id="config-section" style="display: none;">
+            <h2>Configuration des services</h2>
+
+            <!-- Odoo Config -->
+            <div class="config-panel" data-connecteur="Odoo" style="display: none;">
+                <div class="config-header">
+                    <h3>
+                        <span class="icon odoo">OD</span>
+                        Odoo
+                    </h3>
+                    <div class="connection-status">
+                        <span class="status-dot"></span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="config-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="odoo-host">Adresse IP / Hostname</label>
+                            <input type="text" id="odoo-host" data-connecteur="Odoo" data-field="host" placeholder="192.168.1.100">
+                            <small>Adresse du serveur Odoo</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="odoo-port">Port</label>
+                            <input type="number" id="odoo-port" data-connecteur="Odoo" data-field="port" placeholder="8069" value="8069">
+                            <small>Port par défaut : 8069</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="odoo-database">Base de données</label>
+                        <input type="text" id="odoo-database" data-connecteur="Odoo" data-field="database" placeholder="odoo_db">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="odoo-username">Nom d'utilisateur</label>
+                            <input type="text" id="odoo-username" data-connecteur="Odoo" data-field="username" placeholder="admin">
+                        </div>
+                        <div class="form-group">
+                            <label for="odoo-apikey">Clé API</label>
+                            <input type="password" id="odoo-apikey" data-connecteur="Odoo" data-field="apiKey" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <div class="config-actions">
+                        <button type="button" class="btn btn-sm btn-test" data-connecteur="Odoo">Tester la connexion</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SQL Config -->
+            <div class="config-panel" data-connecteur="SQL" style="display: none;">
+                <div class="config-header">
+                    <h3>
+                        <span class="icon sql">SQ</span>
+                        SQL
+                    </h3>
+                    <div class="connection-status">
+                        <span class="status-dot"></span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="config-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sql-host">Adresse IP / Hostname</label>
+                            <input type="text" id="sql-host" data-connecteur="SQL" data-field="host" placeholder="192.168.1.100">
+                            <small>Adresse du serveur SQL</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="sql-port">Port</label>
+                            <input type="number" id="sql-port" data-connecteur="SQL" data-field="port" placeholder="3306" value="3306">
+                            <small>MySQL: 3306, PostgreSQL: 5432</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="sql-database">Base de données</label>
+                        <input type="text" id="sql-database" data-connecteur="SQL" data-field="database" placeholder="nom_base">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sql-username">Nom d'utilisateur</label>
+                            <input type="text" id="sql-username" data-connecteur="SQL" data-field="username" placeholder="root">
+                        </div>
+                        <div class="form-group">
+                            <label for="sql-password">Mot de passe</label>
+                            <input type="password" id="sql-password" data-connecteur="SQL" data-field="password" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <div class="config-actions">
+                        <button type="button" class="btn btn-sm btn-test" data-connecteur="SQL">Tester la connexion</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LDAP Config -->
+            <div class="config-panel" data-connecteur="LDAP" style="display: none;">
+                <div class="config-header">
+                    <h3>
+                        <span class="icon ldap">LD</span>
+                        LDAP
+                    </h3>
+                    <div class="connection-status">
+                        <span class="status-dot"></span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="config-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ldap-host">Adresse IP / Hostname</label>
+                            <input type="text" id="ldap-host" data-connecteur="LDAP" data-field="host" placeholder="192.168.1.100">
+                            <small>Adresse du serveur LDAP</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="ldap-port">Port</label>
+                            <input type="number" id="ldap-port" data-connecteur="LDAP" data-field="port" placeholder="389" value="389">
+                            <small>LDAP: 389, LDAPS: 636</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="ldap-basedn">Base DN</label>
+                        <input type="text" id="ldap-basedn" data-connecteur="LDAP" data-field="baseDn" placeholder="dc=example,dc=com">
+                        <small>Racine de l'annuaire LDAP</small>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ldap-binddn">Bind DN</label>
+                            <input type="text" id="ldap-binddn" data-connecteur="LDAP" data-field="bindDn" placeholder="cn=admin,dc=example,dc=com">
+                            <small>DN de l'utilisateur pour la connexion</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="ldap-password">Mot de passe</label>
+                            <input type="password" id="ldap-password" data-connecteur="LDAP" data-field="password" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <div class="config-actions">
+                        <button type="button" class="btn btn-sm btn-test" data-connecteur="LDAP">Tester la connexion</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
