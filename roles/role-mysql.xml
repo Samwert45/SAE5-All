@@ -1,8 +1,8 @@
-<role oid="00000000-0000-0000-0000-000000000103"
+<role oid="00000000-0000-0000-0000-000000000101"
       xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
-      xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3">
-    <name>ldap4</name>
-    <description>Accès LDAP</description>
+        xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3">
+    <name>mysql</name>
+    <description>Accès MySQL avec privilèges SELECT, INSERT, UPDATE</description>
     <inducement>
         <construction>
             <resourceRef oid="736ea741-2c73-4478-b5d1-07d84cdf860f" type="ResourceType"/>
@@ -11,15 +11,15 @@
                 <ref>ri:roles</ref>
                 <outbound>
                     <expression>
-                        <value>ldap</value>
+                        <value>mysql</value>
                     </expression>
                 </outbound>
             </attribute>
             <attribute>
-                <ref>ri:ldapGroups</ref>
+                <ref>ri:mysqlGrants</ref>
                 <outbound>
                     <expression>
-                        <value>cn=Users,ou=Groups,dc=example,dc=com</value>
+                        <value>SELECT, INSERT, UPDATE</value>
                     </expression>
                 </outbound>
             </attribute>

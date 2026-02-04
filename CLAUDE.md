@@ -1,98 +1,137 @@
-# SAE5-All - Projet Connecteur MidPoint avec RabbitMQ
+# SAE5-All - Gateway de Provisioning MidPoint
 
-## Architecture Globale
+## Architecture
 
 ```
-MidPoint → Java Connector → RabbitMQ → Python Consumer → API Cible
+┌─────────────┐     ┌──────────────────┐     ┌──────────────┐     ┌─────────────────┐
+│  MIDPOINT   │────▶│ Java Connector   │────▶│   RabbitMQ   │────▶│ Python Consumer │
+│  (IAM)      │     │ (RestGateway)    │     │   (Queue)    │     │                 │
+└─────────────┘     └──────────────────┘     └──────────────┘     └────────┬────────┘
+                                                                           │
+                                              ┌────────────────────────────┼────────────────────────────┐
+                                              ▼                            ▼                            ▼
+                                         ┌─────────┐                  ┌─────────┐                  ┌─────────┐
+                                         │  LDAP   │                  │  Odoo   │                  │   SQL   │
+                                         └─────────┘                  └─────────┘                  └─────────┘
 ```
 
 ## Structure du Projet
 
 ```
 SAE5-All/
-├── idm-connector-rest-gateway/     # Connecteur Java MidPoint
+├── idm-connector-rest-gateway/        # Connecteur Java MidPoint
 │   └── src/main/java/lu/lns/connector/restgateway/
-│       ├── RestGatewayConnector.java      # Connecteur principal (CREATE/UPDATE/DELETE)
-│       ├── RestGatewayConfiguration.java  # Config (URL, RabbitMQ, timeouts)
-│       ├── RestGatewayClient.java         # Client HTTP
-│       ├── RabbitMQClient.java            # Client RabbitMQ (publish)
-│       └── JsonMapper.java                # Conversion attributs → JSON
+│       ├── RestGatewayConnector.java       # Connecteur (CREATE/UPDATE/DELETE)
+│       ├── RestGatewayConfiguration.java   # Configuration
+│       ├── RabbitMQClient.java             # Client RabbitMQ
+│       └── JsonMapper.java                 # Conversion → JSON
 │
-├── consumer-rabbitmq.py            # Consumer Python (écoute la queue)
-├── gateway-http.py                 # API Flask (mode HTTP)
-├── gateway.py                      # API Flask basique
-├── docker-compose-rabbitmq.yml     # RabbitMQ container
-└── RabbitMQ/                       # Fichiers support RabbitMQ
+├── front-head/                        # Front-end configuration
+│   ├── connecteurs.html                    # Page sélection connecteurs
+│   ├── utilisateurs.html                   # Page gestion utilisateurs
+│   ├── css/style.css
+│   └── js/app.js
+│
+├── roles/                             # Rôles MidPoint XML
+│   ├── role-ldap.xml                       # Role LDAP (avec ldapGroups)
+│   ├── role-odoo.xml                       # Role Odoo
+│   └── role-sql.xml                        # Role SQL
+│
+├── RabbitMQ/
+│   └── docker-compose-rabbitmq.yml    # Docker RabbitMQ
+│
+├── consumer-rabbitmq.py               # Consumer Python
+└── config.json                        # Configuration connecteurs
 ```
 
-## Modes de Fonctionnement
+## Les 3 Rôles MidPoint
 
-### Mode HTTP (useRabbitmq=false)
-```
-MidPoint → Connector → HTTP POST → gateway-http.py (Flask :5000)
-```
+| Rôle | Description | Attribut spécial |
+|------|-------------|------------------|
+| `ldap` | Provisionne vers LDAP | `ldapGroups` avec DN complet |
+| `odoo` | Provisionne vers Odoo | `roles: odoo` |
+| `sql` | Provisionne vers SQL | `roles: sql` |
 
-### Mode RabbitMQ (useRabbitmq=true)
-```
-MidPoint → Connector → RabbitMQ Queue → consumer-rabbitmq.py → ???
-```
+Chaque rôle mappe tous les attributs utilisateur en outbound.
 
-## Format des Messages JSON
+## Attributs Mappés
+
+| Attribut Connector | Source MidPoint |
+|--------------------|-----------------|
+| `icfs:name` | `$focus/name` |
+| `ri:firstName` | `$focus/givenName` |
+| `ri:lastName` | `$focus/familyName` |
+| `ri:fullName` | `$focus/fullName` |
+| `ri:email` | `$focus/emailAddress` |
+| `ri:telephoneNumber` | `$focus/telephoneNumber` |
+| `ri:title` | `$focus/title` |
+| `ri:description` | `$focus/description` |
+| `ri:locality` | `$focus/locality` |
+| `ri:organization` | `$focus/organization` |
+| `ri:organizationalUnit` | `$focus/organizationalUnit` |
+| `ri:costCenter` | `$focus/costCenter` |
+| `ri:preferredLanguage` | `$focus/preferredLanguage` |
+| `ri:locale` | `$focus/locale` |
+| `ri:timezone` | `$focus/timezone` |
+| `ri:roles` | Nom du rôle (ldap/odoo/sql) |
+| `ri:ldapGroups` | DN du groupe LDAP (role ldap seulement) |
+
+## Format Message JSON (RabbitMQ)
 
 ```json
 {
-  "operation": "CREATE|UPDATE|DELETE",
-  "entityType": "User|Role|Service|Organisation",
-  "timestamp": "2026-01-22T10:30:00Z",
-  "uid": "uuid-unique",
+  "operation": "UPDATE",
+  "entityType": "User",
+  "uid": "0536914d-4f98-43e9-8003-c4b43031088a",
   "attributes": {
-    "username": "jdoe",
-    "firstName": "John",
-    "lastName": "Doe",
-    "email": "john@example.com",
-    "enabled": true,
-    "roles": ["Employee", "Developer"]
+    "username": "Sami2",
+    "firstName": "Sami2",
+    "lastName": "Sami2",
+    "fullName": "Sami2 Sami2",
+    "roles": ["ldap", "odoo"],
+    "ldapGroups": ["cn=LDAP-Users,ou=Groups,dc=example,dc=com"]
   }
 }
 ```
 
 ## Configuration RabbitMQ
 
-- **Host**: localhost (ou 172.17.0.1 depuis Docker)
-- **Port**: 5672 (AMQP), 15672 (Web UI)
-- **Credentials**: admin / admin123
-- **Queue**: midpoint-operations
+| Paramètre | Valeur |
+|-----------|--------|
+| Host | localhost |
+| Port AMQP | 5672 |
+| Port Web UI | 15672 |
+| User | admin |
+| Password | admin123 |
+| Queue | midpoint-operations |
 
-## Commandes Utiles
+## Commandes
 
 ```bash
 # Démarrer RabbitMQ
-docker-compose -f docker-compose-rabbitmq.yml up -d
+docker-compose -f RabbitMQ/docker-compose-rabbitmq.yml up -d
 
-# Build connector
+# Build le connecteur Java
 cd idm-connector-rest-gateway && ./gradlew clean jar
 
 # Déployer dans MidPoint
 docker cp build/libs/connector-restgateway-*.jar midpoint:/opt/midpoint/var/icf-connectors/
 docker restart midpoint
 
-# Lancer le consumer
+# Lancer le consumer Python
 python consumer-rabbitmq.py
 ```
 
-## Problème Actuel
+## Workflow
 
-Le consumer-rabbitmq.py **affiche** les messages mais ne les **redirige pas** vers une API cible.
+1. **Créer un utilisateur** dans MidPoint avec ses attributs
+2. **Assigner un rôle** (ldap, odoo ou sql)
+3. Le rôle **provisionne automatiquement** vers la ressource RabbitMQ
+4. Le **consumer Python** reçoit le message avec tous les attributs
+5. Le consumer peut ensuite **router vers LDAP/Odoo/SQL** selon le rôle
 
-Il faut modifier le consumer pour :
-1. Recevoir le message JSON de RabbitMQ
-2. Déterminer l'API cible selon le type d'opération/entité
-3. Faire un appel HTTP vers cette API
-4. Gérer les erreurs et réponses
+## Ressource MidPoint
 
-## APIs Cibles Potentielles
+OID de la ressource RabbitMQ : `736ea741-2c73-4478-b5d1-07d84cdf860f`
 
-- `gateway-http.py` : Flask sur localhost:5000
-  - POST /create
-  - POST /update
-  - POST /delete
+Pour changer, modifier le `resourceRef` dans les fichiers `roles/*.xml`.
